@@ -127,10 +127,8 @@ echo eval("2+2")  # Prints Integer(4)
 
 ## Installing
 
-You can clone this repository and then install the package via nimble:
-- `git clone https://github.com/nocturn9x/nimkalc`
-- `cd nimkalc`
-- `nimble install`
+You can install the package via nimble with this command: `nimble install https://github.com/nocturn9x/nimkalc`
+
 
 
 __Note__: Nim 1.2.0 or higher is required to build NimKalc! Other versions are likely work if they're not too old, but they have not been tested

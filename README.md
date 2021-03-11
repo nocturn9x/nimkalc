@@ -3,7 +3,9 @@
 NimKalc is a simple implementation of a recursive-descent top-down parser that can evaluate
 mathematical expressions.
 
-__Disclaimer__: This library is __in beta__ and is not fully tested yet. It will be soon, though
+__Disclaimer__: This library is __in beta__ and is not fully tested yet. It will be soon, though. If you
+find any bugs or issues, please report them so we can fix them and make a proper test suite!
+
 
 Features:
 - Support for mathematical constants (`pi`, `tau` and `e` right now)

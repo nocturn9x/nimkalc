@@ -1,14 +1,27 @@
 # NimKalc - A math parsing library
 
 NimKalc is a simple implementation of a recursive-descent top-down parser that can evaluate
-mathematical expressions. Notable mentions are support for common mathematical constants (pi, tau, euler's number, etc),
-functions (`sin`, `cos`, `tan`...), equation-solving algos using newton's method and scientific notation numbers (such as `2e5`)
+mathematical expressions.
+
+__Disclaimer__: This library is __in beta__ and is not fully tested yet. It will be soon, though
+
+Features:
+- Support for mathematical constants (`pi`, `tau` and `e` right now)
+- Supported functions:
+  - `sin`
+  - `cos`
+  - `tan`
+  - `sqrt`
+  - `root` (for generic roots, takes the base and the argument)
+  - `log` (logarithm in base `e`)
+  - `logN` (logarithm in a given base, second argument)
+- Parentheses can be used to enforce different precedence levels
+- Easy API for tokenization, parsing and evaluation of AST nodes
 
 
 ## Current limitations
-- No functions (coming soon)
 - No equation-solving (coming soon)
-- The parsing is a bit weird because `2 2` will parse the first 2 and just stop instead of erroring out (FIXME)
+- The parsing is a bit weird because something like `2 2` will parse the first 2 and just stop instead of erroring out (FIXME)
 
 
 ## How to use it
@@ -18,9 +31,8 @@ NimKalc parses mathematical expressions following this process:
 - Generate an AST
 - Visit the nodes
 
-Each of these steps can be run separately, but for convenience a wrapper
-`eval` procedure has been defined which takes in a string and returns a
-single AST node containing the result of the given expression.
+Each of these steps can be run separately, but for convenience a wrapper `eval` procedure has been defined which takes in a string 
+and returns a single AST node containing the result of the given expression.
 
 ## Supported operators
 
@@ -28,30 +40,39 @@ Beyond the classical 4 operators (`+`, `-`, `/` and `*`), NimKalc supports:
 - `%` for modulo division
 - `^` for exponentiation
 - unary `-` for negation
-- Arbitrarily nested parentheses (__not__ empty ones!) to enforce precedence
-
 
 ## Exceptions
 
-NimKalc defines 2 exceptions:
-- `ParseError` is used when the expression is invalid
+NimKalc defines various exceptions:
+- `NimKalcException` is a generic superclass for all errors
+- `ParseError` is used when the expression is syntactically invalid
 - `MathError` is used when there is an arithmetical error such as division by 0 or domain errors (e.g. `log(0)`)
+- `EvaluationError` is used when the runtime evaluation of an expression fails (e.g. trying to call something that isn't a function)
 
 ## Design
 
 NimKalc treats all numerical values as `float` to simplify the implementation of the underlying operators. To tell integers
 from floating point numbers the `AstNode` object has a `kind` discriminant which will be equal to `NodeKind.Integer` for ints
-and `NodeKind.Float` for decimals. It is advised that you take this into account when using the library
+and `NodeKind.Float` for decimals. It is advised that you take this into account when using the library, since integers might
+start losing precision when converted from their float counterpart due to the difference of the two types. Everything should
+be fine as long as the value doesn't exceed 2 ^ 53, though
 
 
 __Note__: The string representation of integer nodes won't show the decimal part for clarity
+
+Some other notable design choices (due to the underlying simplicity of the language we parse) are as follows:
+- Identifiers are checked when tokenizing, since they're all constant
+- Mathematical constants are immediately mapped to their real values when tokenizing with no intermediate steps or tokens
+- Type errors (such as trying to call an integer) are detected statically at parse time
+
 
 ## String representations
 
 All of NimKalc's objects implement the `$` operator and are therefore printable. Integer nodes will look like `Integer(x)`, while
 floats are represented with `Float(x.x)`. Unary operators print as `Unary(operator, right)`, while binary operators print as `Binary(left, operator, right)`.
 Parenthesized expressions print as `Grouping(expr)`, where `expr` is the expression enclosed in parentheses (as an AST node, obviously).
-Token objects will print as `Token(kind, lexeme)`: an example for the number 2 would be `Token(Integer, '2')`
+Token objects will print as `Token(kind, lexeme)`: an example for the number 2 would be `Token(Integer, '2')`. Function calls print like `Call(name, args)`
+where `name` is the function name and `args` is a `seq[AstNode]` representing the function's arguments
 
 
 ## Example
@@ -115,14 +136,13 @@ when isMainModule:
 
 ```
 
-__Note__: If you don't need the intermediate representations shown here (tokens, AST) you can just `import nimkalc` and use
+__Note__: If you don't need the intermediate representations shown here (tokens/AST) you can just `import nimkalc` and use
 the `eval` procedure, which takes in a string and returns the evaluated result as a primary AST node like so:
 
 ```nim
 import nimkalc
 
 echo eval("2+2")  # Prints Integer(4)
-
 ```
 
 ## Installing

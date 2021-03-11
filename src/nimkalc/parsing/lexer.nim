@@ -27,15 +27,18 @@ const tokens = to_table({
               '(': TokenType.LeftParen, ')': TokenType.RightParen,
               '-': TokenType.Minus, '+': TokenType.Plus,
               '*': TokenType.Mul, '/': TokenType.Div,
-              '%': TokenType.Modulo, '^': TokenType.Exp})
+              '%': TokenType.Modulo, '^': TokenType.Exp,
+              ',': TokenType.Comma})
 # All the identifiers and constants (such as PI)
 # Since they're constant we don't even need to bother adding another
 # AST node kind, we can just map the name to a float literal ;)
-const identifiers = to_table({
+const constants = to_table({
     "pi": Token(kind: TokenType.Float, lexeme: "3.141592653589793"),
     "e": Token(kind: TokenType.Float, lexeme: "2.718281828459045"),
     "tau": Token(kind: TokenType.Float, lexeme: "6.283185307179586")
 })
+# Since also math functions are hardcoded, we can use an array
+const functions = ["sin", "cos", "tan"]
 
 
 type
@@ -88,6 +91,8 @@ func createToken(self: Lexer, tokenType: TokenType): Token =
 proc parseNumber(self: Lexer) =
     ## Parses numeric literals
     var kind = TokenType.Int
+    var scientific: bool = false
+    var sign: bool = false
     while true:
         if self.peek().isDigit():
             discard self.step()
@@ -98,6 +103,11 @@ proc parseNumber(self: Lexer) =
         elif self.peek().toLowerAscii() == 'e':
             # Scientific notation
             kind = TokenType.Float
+            discard self.step()
+            scientific = true
+        elif self.peek().toLowerAscii() in {'-', '+'} and scientific and not sign:
+            # So we can parse stuff like 2e-5
+            sign = true
             discard self.step()
         else:
             break
@@ -111,8 +121,10 @@ proc parseIdentifier(self: Lexer) =
     while self.peek().isAlphaNumeric() or self.peek() in {'_', }:
         discard self.step()
     var text: string = self.source[self.start..<self.current]
-    if text.toLowerAscii() in identifiers:
-        self.tokens.add(identifiers[text])
+    if text.toLowerAscii() in constants:
+        self.tokens.add(constants[text])
+    elif text.toLowerAscii() in functions:
+        self.tokens.add(self.createToken(TokenType.Ident))
     else:
         raise newException(ParseError, &"Unknown identifier '{text}'")
 
@@ -138,6 +150,8 @@ proc lex*(self: Lexer, source: string): seq[Token] =
     ## Lexes a source string, converting a stream
     ## of characters into a series of tokens
     self.source = source
+    self.tokens = @[]
+    self.current = 0
     while not self.done():
         self.start = self.current
         self.scanToken()

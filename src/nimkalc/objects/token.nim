@@ -22,8 +22,10 @@ type
     # Operators
     Plus, Minus, Div, Exp, Modulo,
     Mul, RightParen, LeftParen,
+    # Identifiers
+    Ident,
     # Other
-    Eof
+    Eof, Comma
   Token* = object
     # A token object
     lexeme*: string

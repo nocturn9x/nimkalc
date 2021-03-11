@@ -15,6 +15,9 @@
 
 
 type
-  ParseError* = object of CatchableError
+  NimKalcException* = object of CatchableError
+  ParseError* = object of NimKalcException
     ## A parsing exception
-  MathError* = object of ArithmeticDefect
+  MathError* = object of NimKalcException
+    ## An arithmetic error
+  EvaluationError* = object of NimKalcException

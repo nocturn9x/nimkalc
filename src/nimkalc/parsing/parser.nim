@@ -20,6 +20,7 @@ import ../objects/error
 
 import parseutils
 import strformat
+import tables
 
 
 {.experimental: "implicitDeref".}
@@ -29,6 +30,9 @@ type
   Parser* = ref object
     tokens: seq[Token]
     current: int
+
+
+const arities = to_table({"sin": 1, "cos": 1, "tan": 1})
 
 
 proc initParser*(): Parser = 
@@ -134,8 +138,30 @@ proc primary(self: Parser): AstNode =
       let expression = self.binary()
       self.expect(TokenType.RightParen, "unexpected EOL")
       result = AstNode(kind: NodeKind.Grouping, expr: expression)
+    of TokenType.Ident:
+      result = AstNode(kind: NodeKind.Ident, name: value.lexeme)
     else:
       self.error(&"invalid token of kind '{value.kind}' in primary expression")
+
+
+proc call(self: Parser): AstNode = 
+  ## Parses function calls such as sin(2)
+  var expression = self.primary()
+  if self.match(TokenType.LeftParen):
+    if expression.kind != NodeKind.Ident:
+      self.error(&"object of type '{expression.kind}' is not callable")
+    var arguments: seq[AstNode] = @[]
+    if not self.check(TokenType.RightParen):
+      arguments.add(self.binary())
+      while self.match(TokenType.Comma):
+        arguments.add(self.binary())
+    result = AstNode(kind: NodeKind.Call, arguments: arguments, function: expression)
+    if len(arguments) != arities[expression.name]:
+      self.error(&"Wrong number of arguments supplied to function '{expression.name}': expected {arities[expression.name]}, got {len(arguments)}")
+    self.expect(TokenType.RightParen, "unclosed function call")
+  else:
+    result = expression
+
 
 
 proc unary(self: Parser): AstNode = 
@@ -144,7 +170,7 @@ proc unary(self: Parser): AstNode =
     of TokenType.Minus:
       result = AstNode(kind: NodeKind.Unary, unOp: self.previous(), operand: self.unary())
     else:
-      result = self.primary()
+      result = self.call()
   
 
 proc pow(self: Parser): AstNode = 
@@ -181,10 +207,10 @@ proc binary(self: Parser): AstNode =
   result = self.addition()
 
 
-
 proc parse*(self: Parser, tokens: seq[Token]): AstNode = 
   ## Parses a list of tokens into an AST tree
   self.tokens = tokens
+  self.current = 0
   result = self.binary()
-  
+
 

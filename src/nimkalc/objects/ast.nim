@@ -19,13 +19,16 @@ import error
 import strformat
 import tables
 import math
+import strutils
 
 
 type
   NodeKind* {.pure.} = enum
+    # An enum for all kinds of AST nodes
     Grouping, Unary, Binary, Integer, 
-    Float
+    Float, Call, Ident
   AstNode* = ref object
+    # An AST node object
     case kind*: NodeKind
       of NodeKind.Grouping:
         expr*: AstNode
@@ -42,6 +45,11 @@ type
         # using a double precision float for everything
         # is just easier
         value*: float64
+      of NodeKind.Ident:
+        name*: string
+      of NodeKind.Call:
+          arguments*: seq[AstNode]
+          function*: AstNode
   NodeVisitor* = ref object
     # A node visitor object
 
@@ -64,35 +72,10 @@ proc `$`*(self: AstNode): string =
         result = &"Integer({$int(self.value)})"
       of NodeKind.Float:
         result = &"Float({$self.value})"
-
-
-# Forward declarations
-proc visit_literal(self: NodeVisitor, node: AstNode): AstNode
-proc visit_unary(self: NodeVisitor, node: AstNode): AstNode
-proc visit_binary(self: NodeVisitor, node: AstNode): AstNode
-proc visit_grouping(self: NodeVisitor, node: AstNode): AstNode
-
-
-proc accept(self: AstNode, visitor: NodeVisitor): AstNode = 
-  case self.kind:
-    of NodeKind.Integer, NodeKind.Float:
-      result =  visitor.visit_literal(self)
-    of NodeKind.Binary:
-      result = visitor.visit_binary(self)
-    of NodeKind.Unary:
-      result = visitor.visit_unary(self)
-    of NodeKind.Grouping:
-      result = visitor.visit_grouping(self)
-
-
-proc eval*(self: NodeVisitor, node: AstNode): AstNode = 
-  ## Evaluates an AST node
-  result = node.accept(self)
-
-
-proc visit_literal(self: NodeVisitor, node: AstNode): AstNode =
-  ## Visits a literal AST node (such as integers)
-  result = node   # Not that we can do anything else after all, lol
+      of NodeKind.Call:
+        result = &"Call({self.function.name}, {self.arguments})"
+      of NodeKind.Ident:
+        result = &"Identifier({self.name})"
 
 
 template handleBinary(left, right: AstNode, operator: untyped): AstNode = 
@@ -106,24 +89,87 @@ template handleBinary(left, right: AstNode, operator: untyped): AstNode =
     AstNode(kind: NodeKind.Float, value: r)
 
 
-
-template rightOpNonZero(node: AstNode, opType: string) = 
-  ## Handy template to make sure that the given AST node matches
-  ## a condition from 
+template ensureNonZero(node: AstNode) = 
+  ## Handy template to ensure that a given node's value is not 0
   if node.value == 0.0:
       case node.kind:
-        of NodeKind.Float:
-            raise newException(MathError, "float " & opType & " by 0")
-        of NodeKind.Integer:
-            raise newException(MathError, "integer " & opType & " by 0")
+        of NodeKind.Float, NodeKind.Integer:
+            raise newException(MathError, &"{($node.kind).toLowerAscii()} can't be zero")
         else:
-          raise newException(CatchableError, &"invalid node kind '{node.kind}' for rightOpNonZero")
+          raise newException(CatchableError, &"invalid node kind '{node.kind}' for ensureNonZero")
 
 
 template ensureIntegers(left, right: AstNode) = 
   ## Ensures both operands are integers
   if left.kind != NodeKind.Integer or right.kind != NodeKind.Integer:
     raise newException(MathError, "an integer is required")
+
+
+# Forward declarations
+proc visit_literal(self: NodeVisitor, node: AstNode): AstNode
+proc visit_unary(self: NodeVisitor, node: AstNode): AstNode
+proc visit_binary(self: NodeVisitor, node: AstNode): AstNode
+proc visit_grouping(self: NodeVisitor, node: AstNode): AstNode
+proc visit_call(self: NodeVisitor, node: AstNode): AstNode
+
+
+proc accept(self: AstNode, visitor: NodeVisitor): AstNode = 
+  ## Implements the accept part of the visitor pattern
+  ## for our AST visitor
+  case self.kind:
+    of NodeKind.Integer, NodeKind.Float, NodeKind.Ident:
+      result =  visitor.visit_literal(self)
+    of NodeKind.Binary:
+      result = visitor.visit_binary(self)
+    of NodeKind.Unary:
+      result = visitor.visit_unary(self)
+    of NodeKind.Grouping:
+      result = visitor.visit_grouping(self)
+    of NodeKind.Call:
+      result = visitor.visit_call(self)
+
+
+proc eval*(self: NodeVisitor, node: AstNode): AstNode = 
+  ## Evaluates an AST node
+  result = node.accept(self)
+
+
+proc visit_literal(self: NodeVisitor, node: AstNode): AstNode =
+  ## Visits a literal AST node (such as integers)
+  result = node   # Not that we can do anything else after all, lol
+
+
+proc visit_call(self: NodeVisitor, node: AstNode): AstNode = 
+  ## Visits function call expressions
+  var args: seq[AstNode] = @[]
+  for arg in node.arguments:
+    args.add(self.eval(arg))
+  if node.function.name == "sin":
+    let r = sin(args[0].value) 
+    if r is float:
+      result = AstNode(kind: NodeKind.Float, value: r)
+    else:
+      result = AstNode(kind: NodeKind.Integer, value: float(r))
+  if node.function.name == "cos":
+    let r = cos(args[0].value) 
+    if r is float:
+      result = AstNode(kind: NodeKind.Float, value: r)
+    else:
+      result = AstNode(kind: NodeKind.Integer, value: float(r))
+  if node.function.name == "tan":
+    let r = tan(args[0].value) 
+    if r is float:
+      result = AstNode(kind: NodeKind.Float, value: r)
+    else:
+      result = AstNode(kind: NodeKind.Integer, value: float(r))
+
+
+proc visit_grouping(self: NodeVisitor, node: AstNode): AstNode = 
+  ## Visits grouping (i.e. parenthesized) expressions. Parentheses
+  ## have no other meaning than to allow a lower-precedence expression
+  ## where a higher-precedence one is expected so that 2 * (3 + 1) is
+  ## different from 2 * 3 + 1
+  return self.eval(node.expr)
 
 
 proc visit_binary(self: NodeVisitor, node: AstNode): AstNode = 
@@ -136,11 +182,11 @@ proc visit_binary(self: NodeVisitor, node: AstNode): AstNode =
     of TokenType.Minus:
       result = handleBinary(left, right, `-`)
     of TokenType.Div:
-      rightOpNonZero(right, "division")
+      ensureNonZero(right)
       result = handleBinary(left, right, `/`)
     of TokenType.Modulo:
       # Modulo is a bit special since we must have integers
-      rightOpNonZero(right, "modulo")
+      ensureNonZero(right)
       ensureIntegers(left, right)
       result = AstNode(kind: NodeKind.Integer, value: float(int(left.value) mod int(right.value)))
     of TokenType.Exp:
@@ -165,11 +211,3 @@ proc visit_unary(self: NodeVisitor, node: AstNode): AstNode =
           discard  # Unreachable
     else:
       discard  # Unreachable
-
-
-proc visit_grouping(self: NodeVisitor, node: AstNode): AstNode = 
-  ## Visits grouping (i.e. parenthesized) expressions. Parentheses
-  ## have no other meaning than to allow a lower-precedence expression
-  ## where a higher-precedence one is expected so that 2 * (3 + 1) is
-  ## different from 2 * 3 + 1
-  return self.eval(node.expr)

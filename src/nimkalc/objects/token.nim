@@ -33,5 +33,5 @@ type
 
 
 proc `$`*(self: Token): string =
-  ## Returns a string representation of self
+  ## Returns a string representation of a token
   result = &"Token({self.kind}, '{self.lexeme}')"

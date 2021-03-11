@@ -12,14 +12,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-## 
+## Top-level module for nimkalc
 
 import nimkalc/parsing/parser
 import nimkalc/objects/ast
 import nimkalc/parsing/lexer
+import nimkalc/parsing/token
 
 
-proc eval*(source: string): AstNode = 
+import strutils
+import strformat
+
+
+proc `$`*(self: AstNode): string =
+  ## Stringifies an AST node
+  case self.kind:
+      of NodeKind.Grouping:
+        result = &"Grouping({self.expr})"
+      of NodeKind.Unary:
+        result = &"Unary({$self.unOp.kind}, {$self.operand})"
+      of NodeKind.Binary:
+        result = &"Binary({$self.left}, {$self.binOp.kind}, {$self.right})"
+      of NodeKind.Integer:
+        result = &"Integer({$int(self.value)})"
+      of NodeKind.Float:
+        result = &"Float({$self.value})"
+      of NodeKind.Call:
+        result = &"Call({self.function.name}, {self.arguments})"
+      of NodeKind.Ident:
+        result = &"Identifier({self.name})"
+
+
+proc `$`*(self: Token): string =
+  ## Returns a string representation of a token
+  result = &"Token({self.kind}, '{self.lexeme}')"
+
+
+proc eval*(source: string): AstNode =
   ## Evaluates a mathematical expression as a string
   ## and returns a leaf node representing the result
   let l = initLexer()

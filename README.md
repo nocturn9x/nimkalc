@@ -149,7 +149,7 @@ echo eval("2+2")  # Prints Integer(4)
 
 ## Installing
 
-You can install the package via nimble with this command: `nimble install https://github.com/nocturn9x/nimkalc`
+You can install the package via nimble with this command: `nimble install nimkalc`
 
 
 

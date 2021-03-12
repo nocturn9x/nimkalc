@@ -3,4 +3,5 @@ nimblecache/
 htmldocs/
 examples/repl
 exampls/repl.exe
+repl2.nim
 

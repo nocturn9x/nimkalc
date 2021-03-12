@@ -68,7 +68,7 @@ proc `$`*(self: AstNode): string =
       of NodeKind.Float:
         result = &"Float({$self.value})"
       of NodeKind.Call:
-        result = &"Call({self.function.name}, {self.arguments})"
+        result = &"Call({self.function.name}, {self.arguments.join(\", \")})"
       of NodeKind.Ident:
         result = &"Identifier({self.name})"
 
@@ -104,6 +104,15 @@ template ensureIntegers(left, right: AstNode) =
   ## Ensures both operands are integers
   if left.kind != NodeKind.Integer or right.kind != NodeKind.Integer:
     raise newException(MathError, "an integer is required")
+
+
+template callFunction(fun: untyped, args: varargs[untyped]) = 
+  ## Handy template to call functions
+  let r = fun(args)
+  if r is float:
+    result = AstNode(kind: NodeKind.Float, value: r)
+  else:
+    result = AstNode(kind: NodeKind.Integer, value: float(r))
 
 
 # Forward declarations
@@ -142,27 +151,12 @@ proc visit_literal(self: NodeVisitor, node: AstNode): AstNode =
 
 proc visit_call(self: NodeVisitor, node: AstNode): AstNode =
   ## Visits function call expressions
-  var args: seq[AstNode] = @[]
-  for arg in node.arguments:
-    args.add(self.eval(arg))
   if node.function.name == "sin":
-    let r = sin(args[0].value)
-    if r is float:
-      result = AstNode(kind: NodeKind.Float, value: r)
-    else:
-      result = AstNode(kind: NodeKind.Integer, value: float(r))
+    callFunction(sin, self.eval(node.arguments[0]).value)
   if node.function.name == "cos":
-    let r = cos(args[0].value)
-    if r is float:
-      result = AstNode(kind: NodeKind.Float, value: r)
-    else:
-      result = AstNode(kind: NodeKind.Integer, value: float(r))
+    callFunction(cos, self.eval(node.arguments[0]).value)
   if node.function.name == "tan":
-    let r = tan(args[0].value)
-    if r is float:
-      result = AstNode(kind: NodeKind.Float, value: r)
-    else:
-      result = AstNode(kind: NodeKind.Integer, value: float(r))
+    callFunction(tan, self.eval(node.arguments[0]).value)
 
 
 proc visit_grouping(self: NodeVisitor, node: AstNode): AstNode =

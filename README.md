@@ -73,7 +73,7 @@ All of NimKalc's objects implement the `$` operator and are therefore printable.
 floats are represented with `Float(x.x)`. Unary operators print as `Unary(operator, right)`, while binary operators print as `Binary(left, operator, right)`.
 Parenthesized expressions print as `Grouping(expr)`, where `expr` is the expression enclosed in parentheses (as an AST node, obviously).
 Token objects will print as `Token(kind, lexeme)`: an example for the number 2 would be `Token(Integer, '2')`. Function calls print like `Call(name, args)`
-where `name` is the function name and `args` is a `seq[AstNode]` representing the function's arguments
+where `name` is the function name and `args` is a list of arguments
 
 
 ## Example

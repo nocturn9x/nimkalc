@@ -17,7 +17,7 @@
 import nimkalc/parsing/parser
 import nimkalc/objects/ast
 import nimkalc/parsing/lexer
-import nimkalc/parsing/token
+import nimkalc/objects/token
 
 
 import strutils
@@ -38,7 +38,7 @@ proc `$`*(self: AstNode): string =
       of NodeKind.Float:
         result = &"Float({$self.value})"
       of NodeKind.Call:
-        result = &"Call({self.function.name}, {self.arguments})"
+        result = &"Call({self.function.name}, {self.arguments.join(\", \")})"
       of NodeKind.Ident:
         result = &"Identifier({self.name})"
 

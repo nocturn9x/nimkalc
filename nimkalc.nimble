@@ -1,6 +1,6 @@
 # Package
 
-version     = "0.2.2"
+version     = "0.2.3"
 author      = "Mattia Giambirtone"
 description = "An advanced parsing library for mathematical expressions and equations"
 license     = "Apache 2.0"

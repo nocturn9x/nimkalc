@@ -32,7 +32,12 @@ type
     current: int
 
 
-const arities = to_table({"sin": 1, "cos": 1, "tan": 1})
+const arities = to_table({"sin": 1, "cos": 1, "tan": 1, "cosh": 1,
+                          "tanh": 1, "sinh": 1, "arccos": 1, "arcsin": 1,
+                          "arctan": 1, "log": 2, "log10": 1, "ln": 1, "log2": 1,
+                          "hypot": 2, "sqrt": 1, "cbrt": 2, "arctanh": 1, "arcsinh": 1,
+                          "arccosh": 1
+                          })
 
 
 proc initParser*(): Parser = 
@@ -150,16 +155,16 @@ proc call(self: Parser): AstNode =
   ## Parses function calls such as sin(2)
   var expression = self.primary()
   if self.match(TokenType.LeftParen):
-    if expression.kind != NodeKind.Ident:
-      self.error(&"object of type '{expression.kind}' is not callable")
     var arguments: seq[AstNode] = @[]
     if not self.check(TokenType.RightParen):
       arguments.add(self.binary())
       while self.match(TokenType.Comma):
         arguments.add(self.binary())
     result = AstNode(kind: NodeKind.Call, arguments: arguments, function: expression)
+    if expression.kind != NodeKind.Ident:
+      self.error(&"can't call object of type {expression.kind}")
     if len(arguments) != arities[expression.name]:
-      self.error(&"Wrong number of arguments for '{expression.name}': expected {arities[expression.name]}, got {len(arguments)}")
+      self.error(&"wrong number of arguments for '{expression.name}': expected {arities[expression.name]}, got {len(arguments)}")
     self.expect(TokenType.RightParen, "unclosed function call")
   else:
     result = expression

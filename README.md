@@ -8,17 +8,41 @@ find any bugs or issues, please report them so we can fix them and make a proper
 
 
 Features:
-- Support for mathematical constants (`pi`, `tau` and `e` right now)
-- Supported functions:
+- Support for the following mathematical constants:
+  - `pi`
+  - `tau` (pi * 2)
+  - `e` (Euler's number)
+  - `inf` (Infinity)
+  - `nan` (Not a number)
+- Support for the following of nim's [math library](https://nim-lang.org/docs/math.html#log10%2Cfloat32) functions:
+  - `binom`
   - `sin`
   - `cos`
   - `tan`
+  - `sinh`
+  - `tanh`
+  - `cosh`
+  - `arccos`
+  - `arcsin`
+  - `arctan`
+  - `arcsinh`
+  - `arccosh`
+  - `arctanh`
+  - `hypot`
   - `sqrt`
-  - `root` (for generic roots, takes the base and the argument)
-  - `log` (logarithm in base `e`)
-  - `logN` (logarithm in a given base, second argument)
+  - `cbrt`
+  - `log10`
+  - `log2`
+  - `ln`
+  - `log`
 - Parentheses can be used to enforce different precedence levels
 - Easy API for tokenization, parsing and evaluation of AST nodes
+
+
+__Note__: Some procedures were not implemented because for any of the following reasons:
+- They return booleans or other custom types that we don't support, like `classify`
+- They weren't useful enough or their functionality was already implemented in other ways (such as `pow` which we use as the `^` operator)
+- They just haven't made their way into the library yet, be patient!
 
 
 ## Current limitations

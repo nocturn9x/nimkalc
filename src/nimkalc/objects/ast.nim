@@ -95,7 +95,7 @@ template ensureNonZero(node: AstNode) =
   if node.value == 0.0:
       case node.kind:
         of NodeKind.Float, NodeKind.Integer:
-            raise newException(MathError, &"{($node.kind).toLowerAscii()} can't be zero")
+            raise newException(MathError, "value can't be zero")
         else:
           raise newException(CatchableError, &"invalid node kind '{node.kind}' for ensureNonZero")
 
@@ -151,12 +151,53 @@ proc visit_literal(self: NodeVisitor, node: AstNode): AstNode =
 
 proc visit_call(self: NodeVisitor, node: AstNode): AstNode =
   ## Visits function call expressions
-  if node.function.name == "sin":
-    callFunction(sin, self.eval(node.arguments[0]).value)
-  if node.function.name == "cos":
-    callFunction(cos, self.eval(node.arguments[0]).value)
-  if node.function.name == "tan":
-    callFunction(tan, self.eval(node.arguments[0]).value)
+  case node.function.name:
+    of "sin":
+      callFunction(sin, self.eval(node.arguments[0]).value)
+    of "cos":
+      callFunction(cos, self.eval(node.arguments[0]).value)
+    of "tan":
+      callFunction(tan, self.eval(node.arguments[0]).value)
+    of "sqrt":
+      callFunction(sqrt, self.eval(node.arguments[0]).value)
+    of "log":
+      let arg = self.eval(node.arguments[0])
+      ensureNonZero(arg)
+      callFunction(log, self.eval(node.arguments[0]).value, self.eval(node.arguments[1]).value)
+    of "ln":
+      let arg = self.eval(node.arguments[0])
+      ensureNonZero(arg)
+      callFunction(ln, self.eval(node.arguments[0]).value)
+    of "log2":
+      let arg = self.eval(node.arguments[0])
+      ensureNonZero(arg)
+      callFunction(log2, self.eval(node.arguments[0]).value)
+    of "log10":
+      let arg = self.eval(node.arguments[0])
+      ensureNonZero(arg)
+      callFunction(log10, self.eval(node.arguments[0]).value)
+    of "cbrt":
+      callFunction(cbrt, self.eval(node.arguments[0]).value)
+    of "tanh":
+      callFunction(sinh, self.eval(node.arguments[0]).value)
+    of "sinh":
+      callFunction(tanh, self.eval(node.arguments[0]).value)
+    of "cosh":
+      callFunction(cosh, self.eval(node.arguments[0]).value)
+    of "arcsin":
+      callFunction(arcsin, self.eval(node.arguments[0]).value)
+    of "arccos":
+      callFunction(arccos, self.eval(node.arguments[0]).value)
+    of "arctan":
+      callFunction(arctan, self.eval(node.arguments[0]).value)
+    of "arctanh":
+      callFunction(arctanh, self.eval(node.arguments[0]).value)
+    of "arcsinh":
+      callFunction(arcsinh, self.eval(node.arguments[0]).value)
+    of "arccosh":
+      callFunction(arccosh, self.eval(node.arguments[0]).value)
+    of "hypot":
+      callFunction(hypot, self.eval(node.arguments[0]).value, self.eval(node.arguments[1]).value)
 
 
 proc visit_grouping(self: NodeVisitor, node: AstNode): AstNode =

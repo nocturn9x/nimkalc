@@ -23,7 +23,6 @@ Features:
 
 ## Current limitations
 - No equation-solving (coming soon)
-- The parsing is a bit weird because something like `2 2` will parse the first 2 and just stop instead of erroring out (FIXME)
 
 
 ## How to use it

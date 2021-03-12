@@ -135,6 +135,8 @@ proc primary(self: Parser): AstNode =
       result = AstNode(kind: NodeKind.Float, value: 0.0)
       discard parseFloat(value.lexeme, result.value)
     of TokenType.LeftParen:
+      if self.done():
+        self.error("unexpected EOL")
       let expression = self.binary()
       self.expect(TokenType.RightParen, "unexpected EOL")
       result = AstNode(kind: NodeKind.Grouping, expr: expression)
@@ -157,7 +159,7 @@ proc call(self: Parser): AstNode =
         arguments.add(self.binary())
     result = AstNode(kind: NodeKind.Call, arguments: arguments, function: expression)
     if len(arguments) != arities[expression.name]:
-      self.error(&"Wrong number of arguments supplied to function '{expression.name}': expected {arities[expression.name]}, got {len(arguments)}")
+      self.error(&"Wrong number of arguments for '{expression.name}': expected {arities[expression.name]}, got {len(arguments)}")
     self.expect(TokenType.RightParen, "unclosed function call")
   else:
     result = expression
@@ -212,5 +214,8 @@ proc parse*(self: Parser, tokens: seq[Token]): AstNode =
   self.tokens = tokens
   self.current = 0
   result = self.binary()
+  if len(self.tokens[self.current..<len(self.tokens)]) > 1:
+    # Extra tokens (except EOF) that have not been parsed!
+    self.error("invalid syntax")
 
 

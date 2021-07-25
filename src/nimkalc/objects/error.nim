@@ -21,3 +21,4 @@ type
   MathError* = object of NimKalcException
     ## An arithmetic error
   EvaluationError* = object of NimKalcException
+

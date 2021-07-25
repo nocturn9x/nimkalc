@@ -12,14 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# A simple library to parse and evaluate mathematical expressions
+# A simple REPL to parse and evaluate mathematical expressions
 
-import nimkalc/objects/ast
-import nimkalc/objects/token
-import nimkalc/parsing/parser
-import nimkalc/parsing/lexer
-import nimkalc/objects/error
 
+import nimkalc
 
 import strformat
 import strutils

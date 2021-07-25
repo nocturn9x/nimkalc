@@ -15,7 +15,6 @@ Features:
   - `inf` (Infinity)
   - `nan` (Not a number)
 - Support for the following of nim's [math library](https://nim-lang.org/docs/math.html#log10%2Cfloat32) functions:
-  - `binom`
   - `sin`
   - `cos`
   - `tan`
@@ -105,12 +104,7 @@ where `name` is the function name and `args` is a list of arguments
 Here is an example of a REPL using all of NimKalc's functionality to evaluate expressions from stdin (can be found at `examples/repl.nim`)
 
 ```nim
-import nimkalc/objects/ast
-import nimkalc/objects/token
-import nimkalc/parsing/parser
-import nimkalc/parsing/lexer
-import nimkalc/objects/error
-
+import nimkalc
 
 import strformat
 import strutils

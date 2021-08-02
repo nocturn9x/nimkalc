@@ -92,7 +92,7 @@ func createToken(self: Lexer, tokenType: TokenType): Token =
     result = Token(kind: tokenType,
                    lexeme: self.source[self.start..<self.current],
                    )
-        
+
 
 proc parseNumber(self: Lexer) =
     ## Parses numeric literals
@@ -140,7 +140,7 @@ proc scanToken(self: Lexer) =
     ## called iteratively until the source
     ## string reaches EOF
     var single = self.step()
-    if single in [' ', '\t', '\r']:  # We skip whitespaces, tabs and other stuff
+    if single in [' ', '\t', '\r', '\n']:  # We skip whitespaces, tabs and other stuff
         return
     elif single.isDigit():
         self.parseNumber()

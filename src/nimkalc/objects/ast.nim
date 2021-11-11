@@ -169,6 +169,7 @@ proc visit_call(self: NodeVisitor, node: AstNode): AstNode =
     of "tan":
       callFunction(tan, self.eval(node.arguments[0]).value)
     of "sqrt":
+      let arg = self.eval(node.arguments[0])
       ensurePositive(arg)
       callFunction(sqrt, self.eval(node.arguments[0]).value)
     of "log":
@@ -257,6 +258,12 @@ proc visit_unary(self: NodeVisitor, node: AstNode): AstNode =
         else:
           discard  # Unreachable
     of TokenType.Plus:
-        result = node  # Unary + does nothing
+      case expr.kind:
+        of NodeKind.Float:
+          result = AstNode(kind: NodeKind.Float, value: expr.value)
+        of NodeKind.Integer:
+          result = AstNode(kind: NodeKind.Integer, value: expr.value)
+        else:
+          discard  # Unreachable
     else:
       discard  # Unreachable

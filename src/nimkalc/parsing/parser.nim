@@ -174,7 +174,7 @@ proc call(self: Parser): AstNode =
 proc unary(self: Parser): AstNode = 
   ## Parses unary expressions such as -1
   case self.step().kind:
-    of TokenType.Minus:
+    of TokenType.Minus, TokenType.Plus:
       result = AstNode(kind: NodeKind.Unary, unOp: self.previous(), operand: self.unary())
     else:
       result = self.call()

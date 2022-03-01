@@ -29,9 +29,9 @@ const tokens = to_table({
               '*': TokenType.Mul, '/': TokenType.Div,
               '%': TokenType.Modulo, '^': TokenType.Exp,
               ',': TokenType.Comma})
-# All the identifiers and constants (such as PI)
-# Since they're constant we don't even need to bother adding another
-# AST node kind, we can just map the name to a float literal ;)
+ # All the identifiers and constants (such as PI)
+ # Since they're constant we don't even need to bother adding another
+ # AST node kind, we can just map the name to a float literal ;)
 const constants = to_table({
     "pi": Token(kind: TokenType.Float, lexeme: "3.141592653589793"),
     "e": Token(kind: TokenType.Float, lexeme: "2.718281828459045"),
@@ -91,7 +91,7 @@ func createToken(self: Lexer, tokenType: TokenType): Token =
     ## Creates a token object for later use in the parser
     result = Token(kind: tokenType,
                    lexeme: self.source[self.start..<self.current],
-                   )
+        )
 
 
 proc parseNumber(self: Lexer) =
@@ -140,12 +140,12 @@ proc scanToken(self: Lexer) =
     ## called iteratively until the source
     ## string reaches EOF
     var single = self.step()
-    if single in [' ', '\t', '\r', '\n']:  # We skip whitespaces, tabs and other stuff
+    if single in [' ', '\t', '\r', '\n']: # We skip whitespaces, tabs and other stuff
         return
     elif single.isDigit():
         self.parseNumber()
     elif single in tokens:
-          self.tokens.add(self.createToken(tokens[single]))
+        self.tokens.add(self.createToken(tokens[single]))
     elif single.isAlphanumeric() or single == '_':
         self.parseIdentifier()
     else:

@@ -79,7 +79,7 @@ NimKalc treats all numerical values as `float` to simplify the implementation of
 from floating point numbers the `AstNode` object has a `kind` discriminant which will be equal to `NodeKind.Integer` for ints
 and `NodeKind.Float` for decimals. It is advised that you take this into account when using the library, since integers might
 start losing precision when converted from their float counterpart due to the difference of the two types. Everything should
-be fine as long as the value doesn't exceed 2 ^ 53, though
+be fine as long as the value doesn't exceed 2 ^ 53 though.
 
 
 __Note__: The string representation of integer nodes won't show the decimal part for clarity

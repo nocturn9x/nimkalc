@@ -37,7 +37,8 @@ const constants = to_table({
     "e": Token(kind: TokenType.Float, lexeme: "2.718281828459045"),
     "tau": Token(kind: TokenType.Float, lexeme: "6.283185307179586"),
     "inf": Token(kind: TokenType.Float, lexeme: "inf"),
-    "nan": Token(kind: TokenType.Float, lexeme: "nan")
+    "nan": Token(kind: TokenType.Float, lexeme: "nan"),
+    "phi": Token(kind: TokenType.Float, lexeme: "1.618033988749895"),
 })
 # Since also math functions are hardcoded, we can use an array
 const functions = ["sin", "cos", "tan", "cosh",

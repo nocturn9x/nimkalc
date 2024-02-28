@@ -23,9 +23,6 @@ import strformat
 import tables
 
 
-{.experimental: "implicitDeref".}
-
-
 type
   Parser* = ref object
     tokens: seq[Token]
